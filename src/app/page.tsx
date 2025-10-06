@@ -1,103 +1,118 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useCallback } from 'react';
+import { EditorMode, AppProject, Page, User } from '../types/index';
+import { useAuth } from '../context/AuthContext';
+import { logoutUser as firebaseLogout, updateInstagramConnection } from '../services/firebase';
+
+// Components
+import { LoginPage } from '../components/FrdInputForm'; 
+import { DashboardPage } from '../components/FrdDisplay';
+import { EditorPage } from '../components/FeatureCard'; 
+import { VideoEditorPage } from '../components/VideoEditorPage';
+import { ImageToVideoEditorPage } from '../components/ImageToVideoEditorPage';
+import { SchedulePage, CalendarPage, SettingsPage } from '../components/Spinner';
+import { Icons } from '../constants';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { appUser, loading } = useAuth();
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
+  const [editorMode, setEditorMode] = useState<EditorMode>('photo');
+  const [editingProject, setEditingProject] = useState<Partial<AppProject> | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleLogout = useCallback(async () => {
+    await firebaseLogout();
+    setEditingProject(null);
+    setCurrentPage('dashboard'); // AuthProvider will handle redirecting to login
+  }, []);
+
+  const navigateTo = useCallback((page: Page) => {
+    if (page === 'dashboard') {
+        setEditingProject(null);
+    }
+    setCurrentPage(page);
+  }, []);
+  
+  const startEditor = useCallback((mode: EditorMode, project?: AppProject) => {
+    setEditorMode(mode);
+    setEditingProject(project || {});
+    const pageMap: Record<EditorMode, Page> = {
+      'photo': 'editor',
+      'idea': 'editor',
+      'video': 'videoEditor',
+      'image_to_video': 'imageToVideoEditor'
+    };
+    setCurrentPage(pageMap[mode]);
+  }, []);
+
+  const handleProceedToSchedule = useCallback((projectData: Partial<AppProject>) => {
+    setEditingProject(current => ({ ...current, ...projectData }));
+    setCurrentPage('schedule');
+  }, []);
+
+  const handleEditSchedule = useCallback((projectToEdit: AppProject) => {
+    setEditingProject(projectToEdit);
+    setCurrentPage('schedule');
+  }, []);
+
+  const handleToggleInstagramConnection = useCallback(async () => {
+      if (!appUser) return;
+      const newStatus = !appUser.isInstagramConnected;
+      await updateInstagramConnection(appUser.uid, newStatus);
+      // Note: AuthProvider will automatically pick up this change on next load,
+      // or we'd need a way to refresh the userProfile in the context.
+      // For now, we simulate the change on the client for immediate feedback.
+      appUser.isInstagramConnected = newStatus; 
+  }, [appUser]);
+  
+  const handleBackToEditor = useCallback(() => {
+    const pageMap: Record<EditorMode, Page> = {
+      'photo': 'editor',
+      'idea': 'editor',
+      'video': 'videoEditor',
+      'image_to_video': 'imageToVideoEditor'
+    };
+    setCurrentPage(pageMap[editorMode]);
+  }, [editorMode]);
+
+
+  const renderPage = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Icons.logo className="h-16 w-16 text-indigo-600 animate-pulse" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
-}
+      );
+    }
+
+    if (!appUser) {
+        return <LoginPage />;
+    }
+
+    switch (currentPage) {
+      case 'dashboard':
+        return <DashboardPage user={appUser} onLogout={handleLogout} onNavigate={navigateTo} onStartEditor={startEditor} onEditProject={handleEditSchedule} />;
+      case 'editor':
+        return <EditorPage onLogout={handleLogout} onNavigate={navigateTo} mode={editorMode} onProceedToSchedule={handleProceedToSchedule} editingProject={editingProject} />;
+      case 'videoEditor':
+        return <VideoEditorPage onLogout={handleLogout} onNavigate={navigateTo} onProceedToSchedule={handleProceedToSchedule} editingProject={editingProject} />;
+      case 'imageToVideoEditor':
+        return <ImageToVideoEditorPage onLogout={handleLogout} onNavigate={navigateTo} onProceedToSchedule={handleProceedToSchedule} editingProject={editingProject} />;
+      case 'schedule':
+        if (!editingProject) {
+            navigateTo('dashboard');
+            return null;
+        }
+        return <SchedulePage project={editingProject} onLogout={handleLogout} onNavigate={navigateTo} onBackToEditor={handleBackToEditor} />;
+      case 'calendar':
+        return <CalendarPage onLogout={handleLogout} onNavigate={navigateTo} onEditSchedule={handleEditSchedule} />;
+      case 'settings':
+        return <SettingsPage user={appUser} onLogout={handleLogout} onNavigate={navigateTo} onToggleConnection={handleToggleInstagramConnection} />;
+      default:
+        return <DashboardPage user={appUser} onLogout={handleLogout} onNavigate={navigateTo} onStartEditor={startEditor} onEditProject={handleEditSchedule} />;
+    }
+  };
+
+  return <div className="min-h-screen bg-gray-50">{renderPage()}</div>;
+};
+
