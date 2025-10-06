@@ -27,9 +27,12 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, onBack, onNaviga
                     <Icons.arrowLeft className="h-6 w-6" />
                 </button>
             )}
-            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('dashboard'); }} className="flex items-center gap-3">
-                <Icons.logo className="h-8 w-8 text-[#5890AD]" />
-                <h1 className="text-2xl font-bold text-gray-800 hidden sm:block">KontenAI</h1>
+            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('dashboard'); }} className="flex items-center gap-4">
+                <Icons.logo className="h-10 w-10 text-[#5890AD]" />
+                <div className="flex flex-col">
+                    <h1 className="text-xl font-bold text-gray-800 leading-tight">RICE AI</h1>
+                    <p className="text-xs text-gray-500 leading-tight">Konten SaaS Untuk Bisnis</p>
+                </div>
             </a>
           </div>
           <DropdownMenu>
@@ -59,3 +62,4 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, onBack, onNaviga
     </header>
   );
 };
+

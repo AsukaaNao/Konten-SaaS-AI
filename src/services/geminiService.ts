@@ -122,7 +122,11 @@ class GeminiService {
       },
     });
 
-    const base64Image = response.generatedImages[0].image.imageBytes;
+    const base64Image = response?.generatedImages?.[0]?.image?.imageBytes;
+    if (!base64Image) {
+        throw new Error("API did not return a valid image.");
+    }
+
     return { imageUrl: `data:image/png;base64,${base64Image}` };
   }
 
@@ -209,7 +213,11 @@ class GeminiService {
         },
     });
 
-    return JSON.parse(response.text);
+    const text = response?.text;
+    if (!text) {
+        throw new Error("API did not return valid JSON text for copy.");
+    }
+    return JSON.parse(text);
   }
   
   generateVoiceover(caption: string): Promise<string> {
@@ -293,7 +301,11 @@ class GeminiService {
             }
         }
     });
-    return JSON.parse(response.text);
+    const text = response?.text;
+    if (!text) {
+        throw new Error("API did not return valid JSON text for copy.");
+    }
+    return JSON.parse(text);
   }
   
   async generateVideoFromStoryboard(
