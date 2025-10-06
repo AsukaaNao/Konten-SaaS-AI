@@ -19,31 +19,43 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, onBack, onNaviga
         <div className="flex justify-between items-center py-3">
           <div className="flex items-center gap-3">
             {onBack && (
-                <button
-                    onClick={onBack}
-                    className="p-2 rounded-full hover:bg-gray-100 text-gray-600 -ml-2"
-                    aria-label="Go back"
-                >
-                    <Icons.arrowLeft className="h-6 w-6" />
-                </button>
+              <button
+                onClick={onBack}
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-600 -ml-2"
+                aria-label="Go back"
+              >
+                <Icons.arrowLeft className="h-6 w-6" />
+              </button>
             )}
-            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('dashboard'); }} className="flex items-center gap-4">
-                <Icons.logo className="h-10 w-10 text-[#5890AD]" />
-                <div className="flex flex-col">
-                    <h1 className="text-xl font-bold text-gray-800 leading-tight">RICE AI</h1>
-                    <p className="text-xs text-gray-500 leading-tight">Konten SaaS Untuk Bisnis</p>
-                </div>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate('dashboard');
+              }}
+              className="flex items-center gap-4"
+            >
+              <img
+                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,fit=crop,q=95/AGB2yyJJKXfD527r/rice-ai-consulting-2-AoPWxvnWOju2GwOz.png"
+                alt="RICE AI Consulting"
+                className="h-10 w-auto"
+              />
+              <div className="flex flex-col">
+                <h1 className="text-xl font-bold text-gray-800 leading-tight">RICE AI Consulting</h1>
+                <p className="text-xs text-gray-500 leading-tight">AI-Powered Solutions for Businesses</p>
+              </div>
             </a>
           </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger>
               <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer">
-                  <Avatar src={user.avatarUrl} fallback={userFallback} />
-                  <div className="hidden md:flex flex-col text-left">
-                      <span className="font-semibold text-sm text-gray-800">{user.displayName}</span>
-                      <span className="text-xs text-gray-500">{user.email}</span>
-                  </div>
-                  <Icons.chevronDown className="h-5 w-5 text-gray-400 hidden md:block" />
+                <Avatar src={user.avatarUrl} fallback={userFallback} />
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="font-semibold text-sm text-gray-800">{user.displayName}</span>
+                  <span className="text-xs text-gray-500">{user.email}</span>
+                </div>
+                <Icons.chevronDown className="h-5 w-5 text-gray-400 hidden md:block" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -62,4 +74,3 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, onBack, onNaviga
     </header>
   );
 };
-
