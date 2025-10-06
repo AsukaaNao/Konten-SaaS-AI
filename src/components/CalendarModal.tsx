@@ -73,7 +73,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, o
   if (!appUser) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} >
+    <Modal isOpen={isOpen} onClose={onClose}>
         <ModalHeader>
             <ModalTitle>Content Calendar</ModalTitle>
             <div className="font-semibold text-xl text-gray-700">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</div>

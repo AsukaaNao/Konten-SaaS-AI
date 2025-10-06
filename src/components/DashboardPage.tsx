@@ -18,16 +18,16 @@ const ProjectCardSkeleton: React.FC = () => (
 );
 
 export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout, onNavigate, onStartEditor, onEditProject }) => {
-  const { user: firebaseUser } = useAuth();
+  const { appUser } = useAuth(); // Corrected from 'user' to 'appUser' to match context
   const [projects, setProjects] = useState<AppProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [projectToDelete, setProjectToDelete] = useState<AppProject | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (firebaseUser) {
+    if (appUser) { // Use appUser from context
       setIsLoading(true);
-      getProjectsForUser(firebaseUser.uid)
+      getProjectsForUser(appUser.uid)
         .then(userProjects => {
           const sorted = userProjects.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           setProjects(sorted);
@@ -35,7 +35,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout, on
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
-  }, [firebaseUser]);
+  }, [appUser]);
 
   const openDeleteModal = (project: AppProject, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -43,10 +43,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout, on
   };
 
   const handleDeleteProject = async () => {
-    if (!projectToDelete || !firebaseUser) return;
+    if (!projectToDelete || !appUser) return;
     setIsDeleting(true);
     try {
-      await deleteProject(firebaseUser.uid, projectToDelete.id, projectToDelete.mediaUrl);
+      await deleteProject(appUser.uid, projectToDelete.id, projectToDelete.mediaUrl);
       setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
       setProjectToDelete(null); // Close modal on success
     } catch (error) {

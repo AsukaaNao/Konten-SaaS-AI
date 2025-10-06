@@ -122,19 +122,18 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
     }
     setIsLoading(p => ({...p, saving: true}));
     try {
-        // **FIX:** Convert the generated blob URL back to a File object
         const videoFileToUpload = await urlToFile(generatedVideoUrl, `video-project-${Date.now()}.mp4`);
 
         const projectId = await createProject(appUser.uid, {
-            file: videoFileToUpload, // Pass the File object
+            file: videoFileToUpload,
             projectType: 'video',
             caption: finalCaption,
-            hashtags: '', // Hashtags aren't generated in this flow
+            hashtags: '', 
         });
 
         onProceedToSchedule({
           id: projectId,
-          mediaUrl: generatedVideoUrl, // Use blob URL for display
+          mediaUrl: generatedVideoUrl,
           projectType: 'video',
           caption: finalCaption,
           storyboard: storyboard || undefined,
@@ -160,9 +159,9 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
           <Step title="The Plan: AI Storyboard" number={1} isActive={step === 1} isCompleted={!!storyboard}>
             <div className="space-y-4">
               <label className="font-medium text-gray-700">Jelaskan produk/jasamu</label>
-              <textarea className="w-full p-2 border rounded-md bg-white" rows={3} placeholder="Contoh: Kopi susu Gula Aren dengan biji kopi premium dari Jawa Barat..." value={prompt} onChange={e => setPrompt(e.target.value)} />
+              <textarea className="w-full p-2 border rounded-md bg-white text-gray-900" rows={3} placeholder="Contoh: Kopi susu Gula Aren..." value={prompt} onChange={e => setPrompt(e.target.value)} />
               <label className="font-medium text-gray-700">Pilih Tujuan Video</label>
-              <select className="w-full p-2 border rounded-md bg-white" value={goal} onChange={e => setGoal(e.target.value)}>
+              <select className="w-full p-2 border rounded-md bg-white text-gray-900" value={goal} onChange={e => setGoal(e.target.value)}>
                 <option>Product Showcase</option>
                 <option>Quick Tutorial</option>
                 <option>Unboxing</option>
@@ -175,13 +174,13 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
           </Step>
 
           <Step title="The Media: Upload Aset" number={2} isActive={step === 2} isCompleted={mediaFiles.length > 0}>
-            <p className="text-sm text-gray-600 mb-4">Upload foto atau klip video pendek (max 10 file). AI akan menggunakannya sebagai inspirasi visual.</p>
+            <p className="text-sm text-gray-600 mb-4">Upload foto atau klip video pendek (max 10 file).</p>
             <Input type="file" multiple accept="image/*,video/*" onChange={handleMediaUpload} />
             {mediaFiles.length > 0 && <Button onClick={() => setStep(3)} className="w-full mt-4">Lanjut</Button>}
           </Step>
           
           <Step title="The Magic: AI Assembly" number={3} isActive={step === 3} isCompleted={!!generatedVideoUrl}>
-              <p className="text-sm text-gray-600 mb-4">AI akan menggabungkan storyboard dan aset mediamu menjadi sebuah video. Proses ini mungkin memakan waktu beberapa menit.</p>
+              <p className="text-sm text-gray-600 mb-4">AI akan menggabungkan storyboard dan mediamu menjadi video.</p>
               <Button onClick={handleGenerateVideo} disabled={isLoading.video} className="w-full">
                 {isLoading.video ? 'Merakit Video...' : 'Buat Video Sekarang'}
               </Button>
@@ -191,7 +190,7 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
             <div className="space-y-4">
               <div>
                 <label className="font-medium text-gray-700">Final Caption</label>
-                <textarea className="w-full p-2 border rounded-md bg-white" rows={4} placeholder="Tulis caption akhir untuk postinganmu..." value={finalCaption} onChange={e => setFinalCaption(e.target.value)} />
+                <textarea className="w-full p-2 border rounded-md bg-white text-gray-900" rows={4} placeholder="Tulis caption akhir..." value={finalCaption} onChange={e => setFinalCaption(e.target.value)} />
               </div>
                <div>
                 <label className="font-medium text-gray-700">AI Voiceover (Opsional)</label>
@@ -234,7 +233,7 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
                   <h3 className="font-bold text-center mb-2">Media Uploaded</h3>
                   <div className="grid grid-cols-3 gap-2 max-h-[500px] overflow-y-auto">
                       {mediaPreviews.map((src, i) => (
-                          <img key={i} src={src} className="w-full aspect-square object-cover rounded" />
+                          <img key={i} src={src} className="w-full aspect-square object-cover rounded" alt={`Uploaded media ${i + 1}`} />
                       ))}
                   </div>
               </div>
@@ -260,3 +259,4 @@ export const VideoEditorPage: React.FC<VideoEditorPageProps> = ({ onLogout, onNa
     </div>
   );
 };
+

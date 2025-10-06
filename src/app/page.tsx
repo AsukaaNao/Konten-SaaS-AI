@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { logoutUser as firebaseLogout, updateInstagramConnection } from '../services/firebase';
 
 // Components
-import { LoginPage } from '../components/FrdInputForm'; 
-import { DashboardPage } from '../components/FrdDisplay';
-import { EditorPage } from '../components/FeatureCard'; 
+import { LoginPage } from '../components/LoginPage'; 
+import { DashboardPage } from '../components/DashboardPage';
+import { EditorPage } from '../components/EditorPage'; 
 import { VideoEditorPage } from '../components/VideoEditorPage';
 import { ImageToVideoEditorPage } from '../components/ImageToVideoEditorPage';
 import { SchedulePage, CalendarPage, SettingsPage } from '../components/Spinner';

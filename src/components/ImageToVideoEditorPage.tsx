@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, SVGProps } from 'react';
 import { Page, AppProject } from '../types/index';
 import { Header } from './Header';
 import { Button, Card, CardContent, Icons, Input } from '../constants';
@@ -27,6 +27,25 @@ const Step: React.FC<{ title: string; number: number; children: React.ReactNode;
         </div>
     </div>
 );
+
+// --- Ikon Baru yang Didefinisikan Menggunakan React.createElement ---
+const NewImageToVideoIcon = (props: SVGProps<SVGSVGElement>) => {
+    return React.createElement('svg', { ...props, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round'},
+      React.createElement('path', { d: 'M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-1 1.73' }),
+      React.createElement('path', { d: 'm7 14 3-3 4 4' }),
+      React.createElement('path', { d: 'm14 10 1-1' }),
+      React.createElement('path', { d: 'M16 19h6' }),
+      React.createElement('path', { d: 'M19 16v6' })
+    );
+};
+
+const TrashIcon = (props: SVGProps<SVGSVGElement>) => {
+    return React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
+      React.createElement('path', { d: "M3 6h18" }),
+      React.createElement('path', { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
+    );
+};
+
 
 type VideoStyle = 'Zoom & Pan Lembut (Ken Burns)' | 'Slide Cepat & Enerjik' | 'Transisi Halus (Fade)';
 type MusicMood = 'Uplifting' | 'Energetic' | 'Calm' | 'Cinematic';
@@ -68,10 +87,16 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []).slice(0, 10);
-    setUploadedImages(files);
+    setUploadedImages(current => [...current, ...files]);
     const previews = files.map(file => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    setImagePreviews(current => [...current, ...previews]);
     setStep(1);
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    URL.revokeObjectURL(imagePreviews[indexToRemove]);
+    setUploadedImages(current => current.filter((_, index) => index !== indexToRemove));
+    setImagePreviews(current => current.filter((_, index) => index !== indexToRemove));
   };
 
   const handleDragStart = (index: number) => {
@@ -85,9 +110,12 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
     newImages.splice(targetIndex, 0, draggedItem);
     
     setUploadedImages(newImages);
-    const newPreviews = newImages.map(file => URL.createObjectURL(file));
+    
+    // Re-create previews to match new order
     imagePreviews.forEach(URL.revokeObjectURL);
+    const newPreviews = newImages.map(file => URL.createObjectURL(file));
     setImagePreviews(newPreviews);
+    
     setDraggedIndex(null);
   };
 
@@ -111,19 +139,18 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
     if (!appUser || !generatedVideoUrl) return;
     setIsSaving(true);
     try {
-        // **FIX:** Convert the blob URL back to a File object before saving
         const videoFileToUpload = await urlToFile(generatedVideoUrl, `video-project-${Date.now()}.mp4`);
 
         const projectId = await createProject(appUser.uid, {
-            file: videoFileToUpload, // Pass the File object, not the URL string
+            file: videoFileToUpload,
             projectType: 'image_to_video',
             caption: headline,
-            hashtags: '', // Hashtags are not generated in this flow
+            hashtags: '',
         });
 
         onProceedToSchedule({
           id: projectId,
-          mediaUrl: generatedVideoUrl, // Still use the blob URL for immediate display
+          mediaUrl: generatedVideoUrl,
           projectType: 'image_to_video',
           caption: headline,
         });
@@ -138,13 +165,13 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
 
   return (
     <div className="flex flex-col max-h-screen">
-      <Header user={appUser} onLogout={onLogout} onBack={() => onNavigate('dashboard')} onNavigate={onNavigate} />
+      <Header user={appUser} onLogout={onLogout} onBack={() => onNavigate('dashboard')} onNavigate={onNavigate}/>
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8 overflow-y-auto">
         {/* Left Column: Controls */}
         <div className="flex flex-col gap-6">
           <Step title="Pilih & Atur Gambar" number={1} isActive={step === 1} isCompleted={uploadedImages.length > 0}>
              <Input type="file" multiple accept="image/jpeg,image/png" onChange={handleImageUpload} />
-             <p className="text-xs text-gray-500 mt-2">Unggah 1-10 gambar. Urutkan dengan drag-and-drop.</p>
+             <p className="text-xs text-gray-900 mt-2">Unggah 1-10 gambar. Urutkan dengan drag-and-drop.</p>
              {imagePreviews.length > 0 && <Button onClick={() => setStep(2)} className="w-full mt-4">Lanjut</Button>}
           </Step>
 
@@ -152,7 +179,7 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
             <div className="grid grid-cols-1 gap-3">
               {(['Zoom & Pan Lembut (Ken Burns)', 'Slide Cepat & Enerjik', 'Transisi Halus (Fade)'] as VideoStyle[]).map(style => (
                 <button key={style} onClick={() => setSelectedStyle(style)} className={`p-4 rounded-lg border-2 text-left transition-colors ${selectedStyle === style ? 'border-[#5890AD] bg-[#9BBBCC]' : 'border-gray-200 hover:border-gray-400'}`}>
-                  <p className="font-semibold">{style}</p>
+                  <p className="font-semibold text-gray-900">{style}</p>
                 </button>
               ))}
             </div>
@@ -162,12 +189,12 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
           <Step title="Tambahkan Teks & Musik" number={3} isActive={step === 3} isCompleted={!!headline}>
             <div className="space-y-4">
                 <div>
-                    <label className="font-medium text-gray-700">Headline / Teks Utama</label>
-                    <Input type="text" placeholder="Contoh: Diskon 50% Hari Ini!" value={headline} onChange={e => setHeadline(e.target.value)} />
+                    <label className="font-medium text-gray-900">Headline / Teks Utama</label>
+                    <Input type="text" placeholder="Contoh: Diskon 50% Hari Ini!" value={headline} onChange={e => setHeadline(e.target.value)} className="text-gray-900"/>
                 </div>
                 <div>
-                    <label className="font-medium text-gray-700">Pilih Musik Latar</label>
-                    <select className="w-full p-3 border rounded-md bg-white" value={selectedMusic} onChange={e => setSelectedMusic(e.target.value as MusicMood)}>
+                    <label className="font-medium text-gray-900">Pilih Musik Latar</label>
+                    <select className="w-full p-3 border rounded-md bg-white text-gray-900" value={selectedMusic} onChange={e => setSelectedMusic(e.target.value as MusicMood)}>
                         <option>Uplifting</option>
                         <option>Energetic</option>
                         <option>Calm</option>
@@ -197,15 +224,23 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
                 {step === 1 && uploadedImages.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
                         {uploadedImages.map((image, index) => (
-                           <div
-                             key={image.name + index}
-                             className={`aspect-square rounded-md bg-cover bg-center cursor-grab ${draggedIndex === index ? 'opacity-50' : ''}`}
-                             style={{ backgroundImage: `url(${imagePreviews[index]})` }}
-                             draggable
-                             onDragStart={() => handleDragStart(index)}
-                             onDragOver={(e) => e.preventDefault()}
-                             onDrop={() => handleDrop(index)}
-                           ></div>
+                           <div key={image.name + index} className="relative group">
+                             <div
+                               className={`aspect-square rounded-md bg-cover bg-center cursor-grab ${draggedIndex === index ? 'opacity-50' : ''}`}
+                               style={{ backgroundImage: `url(${imagePreviews[index]})` }}
+                               draggable
+                               onDragStart={() => handleDragStart(index)}
+                               onDragOver={(e) => e.preventDefault()}
+                               onDrop={() => handleDrop(index)}
+                             ></div>
+                             <button
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full h-5 w-5 flex items-center justify-center p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                aria-label="Remove image"
+                              >
+                                <TrashIcon className="h-3 w-3" />
+                             </button>
+                           </div>
                         ))}
                     </div>
                 )}
@@ -221,7 +256,7 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
                           </div>
                       ) : (
                           <div className="text-gray-400 p-4 text-center">
-                              <Icons.imageToVideo className="h-12 w-12 mx-auto mb-4" />
+                              <NewImageToVideoIcon className="h-12 w-12 mx-auto mb-4" />
                               <p className="font-semibold">Pratinjau video akan muncul di sini.</p>
                           </div>
                       )}
@@ -233,3 +268,4 @@ export const ImageToVideoEditorPage: React.FC<ImageToVideoEditorPageProps> = ({ 
     </div>
   );
 };
+

@@ -37,7 +37,6 @@ export const LoginPage: React.FC = () => {
       await signInWithGoogle();
       // On success, the AuthProvider will handle the redirect.
     } catch (err: any) {
-      // It's good practice to handle specific errors, like user closing the popup.
       if (err.code === 'auth/popup-closed-by-user') {
         // Don't show an error message, just stop loading.
       } else {
@@ -73,6 +72,7 @@ export const LoginPage: React.FC = () => {
                 placeholder="Your Name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                className="text-gray-900"
               />
             )}
             <Input
@@ -84,6 +84,7 @@ export const LoginPage: React.FC = () => {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="text-gray-900"
             />
             <Input
               id="password"
@@ -94,6 +95,7 @@ export const LoginPage: React.FC = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className="text-gray-900"
             />
           </div>
 
@@ -131,3 +133,4 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+

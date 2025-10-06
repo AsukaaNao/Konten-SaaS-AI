@@ -187,9 +187,9 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                 {mode === 'idea' ? (
                     <div className="space-y-4">
                         <label className="font-medium text-gray-700">Jelaskan idemu</label>
-                        <textarea className="w-full p-2 border rounded-md bg-white" rows={4} placeholder="Contoh: Poster diskon 20% untuk kopi susu..." value={prompt} onChange={e => setPrompt(e.target.value)} />
+                        <textarea className="w-full p-2 border rounded-md bg-white text-gray-900" rows={4} placeholder="Contoh: Poster diskon 20% untuk kopi susu..." value={prompt} onChange={e => setPrompt(e.target.value)} />
                         <label className="font-medium text-gray-700">Pilih Gaya</label>
-                        <select className="w-full p-2 border rounded-md bg-white" value={style} onChange={e => setStyle(e.target.value)}>
+                        <select className="w-full p-2 border rounded-md bg-white text-gray-900" value={style} onChange={e => setStyle(e.target.value)}>
                             <option>Fotorealistik</option>
                             <option>Minimalis</option>
                             <option>Ilustrasi Kartun</option>
@@ -218,7 +218,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                     {selectedCaption && !isGeneratingCopy && (
                          <div className="space-y-2 pt-4">
                             <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
-                            <textarea className="w-full p-3 border rounded-md bg-white text-sm" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
+                            <textarea className="w-full p-3 border rounded-md bg-white text-sm text-gray-900" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
                         </div>
                     )}
                     
@@ -226,7 +226,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                         <div className="space-y-2 pt-4">
                             <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
                             {generatedCaptions.map((cap, i) => (
-                                <div key={i} className={`text-sm p-3 rounded-md cursor-pointer ${selectedCaption === cap ? 'bg-[#EBF1F4] ring-2 ring-[#5890AD]' : 'bg-gray-100 hover:bg-gray-200'}`} onClick={() => setSelectedCaption(cap)}>
+                                <div key={i} className={`text-sm p-3 rounded-md cursor-pointer ${selectedCaption === cap ? 'bg-[#9BBBCC] ring-2 ring-[#5890AD]' : 'bg-gray-100 hover:bg-gray-200'}`} onClick={() => setSelectedCaption(cap)}>
                                     {cap}
                                 </div>
                             ))}
@@ -308,3 +308,4 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
     </div>
   );
 };
+
