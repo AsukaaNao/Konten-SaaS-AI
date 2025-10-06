@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 email: profile.email,
                 displayName: profile.displayName || 'User',
                 isInstagramConnected: profile.isInstagramConnected,
-                avatarUrl: `https://i.pravatar.cc/150?u=${profile.email}`
+                avatarUrl: `https://static.vecteezy.com/system/resources/thumbnails/003/337/584/small_2x/default-avatar-photo-placeholder-profile-icon-vector.jpg`
             });
         }
       } else {
