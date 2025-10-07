@@ -67,7 +67,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout, on
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-            <Card className="hover:shadow-xl transition-shadow duration-300">
+            {/* <Card className="hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="flex flex-col items-center justify-center text-center p-8 h-full">
                      <Icons.video className="h-16 w-16 text-[#9BBBCC] mb-4" />
                     <h3 className="text-xl font-bold text-gray-800">Buat Iklan Video AI</h3>
@@ -82,7 +82,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ user, onLogout, on
                     <p className="text-gray-500 mt-2 mb-6">Ubah fotomu menjadi video iklan yang dinamis dan menarik.</p>
                     <Button onClick={() => onStartEditor('image_to_video')} className="w-full mt-auto">Mulai Sekarang</Button>
                 </CardContent>
-            </Card>
+            </Card> */}
             <Card className="hover:shadow-xl transition-shadow duration-300">
                 <CardContent className="flex flex-col items-center justify-center text-center p-8 h-full">
                      <Icons.add className="h-16 w-16 text-[#9BBBCC] mb-4" />

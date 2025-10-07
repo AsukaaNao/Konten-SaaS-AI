@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Page, User, EditorMode, AppProject } from '../types/index';
 import { Header } from './Header';
-import { Button, Card, CardContent, Icons, Input } from '../constants';
+import { Button, Card, CardContent, Icons, Input, ButtonLoader, AIThinkingIndicator} from '../constants';
 import { aiService } from '../services/geminiService';
 import { createProject } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
@@ -182,8 +182,8 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
         
         {/* Left Column: Controls */}
         <div className="flex flex-col gap-8">
-            {/* Step 1: Visual Generation */}
             <Step title="Buat Visual Konten" number={1} isActive={currentStep === 1}>
+                {/* Visual Generation Form */}
                 {mode === 'idea' ? (
                     <div className="space-y-4">
                         <label className="font-medium text-gray-700">Jelaskan idemu</label>
@@ -204,80 +204,93 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                     </div>
                 )}
                 <Button onClick={handleGenerateVisual} disabled={isLoadingVisual || !canGenerateVisual} className="w-full md:w-auto mt-4">
-                    {isLoadingVisual ? 'Membuat Visual...' : 'Buat Visual'}
+                    {isLoadingVisual ? <ButtonLoader /> : 'Buat Visual'}
                 </Button>
             </Step>
 
-            {/* Step 2: Content Generation */}
             <Step title="Tulis Pesan & Voiceover" number={2} isActive={currentStep === 2}>
                 <div className="space-y-4">
                     <Button onClick={handleGenerateCopy} disabled={isGeneratingCopy || !generatedImage} className="w-full md:w-auto">
-                        {isGeneratingCopy ? 'Membuat Ulang...' : 'Buat Caption & Hashtag Baru'}
+                        {isGeneratingCopy ? <ButtonLoader /> : 'Buat Caption & Hashtag Baru'}
                     </Button>
                     
-                    {selectedCaption && !isGeneratingCopy && (
-                         <div className="space-y-2 pt-4">
-                            <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
-                            <textarea className="w-full p-3 border rounded-md bg-white text-sm text-gray-900" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
+                    {isGeneratingCopy ? (
+                        <div className="py-8">
+                           <AIThinkingIndicator generatingWhat="copy" />
                         </div>
-                    )}
-                    
-                    {generatedCaptions.length > 0 && (
-                        <div className="space-y-2 pt-4">
-                            <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
-                            {generatedCaptions.map((cap, i) => (
-                                <div key={i} className={`text-sm p-3 rounded-md cursor-pointer ${selectedCaption === cap ? 'bg-[#9BBBCC] ring-2 ring-[#5890AD]' : 'bg-gray-100 hover:bg-gray-200'}`} onClick={() => setSelectedCaption(cap)}>
-                                    {cap}
+                    ) : (
+                        <>
+                            {selectedCaption && (
+                                 <div className="space-y-2 pt-4">
+                                     <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
+                                     <textarea className="w-full p-3 border rounded-md bg-white text-sm text-gray-900" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
+                                 </div>
+                            )}
+                            
+                            {generatedCaptions.length > 0 && (
+                                <div className="space-y-2 pt-4">
+                                    <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
+                                    {generatedCaptions.map((cap, i) => (
+                                        <div 
+                                            key={i} 
+                                            className={`text-sm p-3 rounded-md cursor-pointer transition-colors ${
+                                                selectedCaption === cap 
+                                                ? 'bg-[#5890AD] text-white' 
+                                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50'
+                                            }`} 
+                                            onClick={() => setSelectedCaption(cap)}
+                                        >
+                                            {cap}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                    {selectedCaption && (
-                        <div className="pt-4 space-y-2 border-t mt-4">
-                            <h4 className="font-semibold text-gray-700">Voiceover</h4>
-                            <Button onClick={handleGenerateVoiceover} disabled={isGeneratingVoiceover} variant="secondary" className="w-full md:w-auto">
-                                {isGeneratingVoiceover ? 'Membuat Voiceover...' : 'Buat Voiceover Audio'}
-                            </Button>
-                            {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
-                        </div>
-                    )}
-                    {generatedHashtags && (
-                        <div className="space-y-2 pt-4">
-                            <h4 className="font-semibold text-gray-700">Hashtag:</h4>
-                            <div className="text-sm p-3 bg-gray-100 rounded-md font-mono">{generatedHashtags}</div>
-                        </div>
+                            )}
+
+                            {selectedCaption && (
+                                <div className="pt-4 space-y-2 border-t mt-4">
+                                    <h4 className="font-semibold text-gray-700">Voiceover</h4>
+                                    <Button onClick={handleGenerateVoiceover} disabled={isGeneratingVoiceover} variant="secondary" className="w-full md:w-auto">
+                                        {isGeneratingVoiceover ? <ButtonLoader /> : 'Buat Voiceover Audio'}
+                                    </Button>
+                                    {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
+                                </div>
+                            )}
+
+                            {generatedHashtags && (
+                                <div className="space-y-2 pt-4">
+                                    <h4 className="font-semibold text-gray-700">Hashtag:</h4>
+                                    <div className="text-sm p-3 bg-white text-gray-800 border border-gray-200 rounded-md font-mono">{generatedHashtags}</div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </Step>
-            {/* Action Footer */}
+
             <div className="flex-shrink-0 pt-6 border-t border-gray-200 mt-auto">
                 <Button onClick={handleNext} className="w-full" disabled={!generatedImage || !selectedCaption || isSaving}>
-                    {isSaving ? 'Saving Project...' : 'Next: Schedule Post'}
+                    {isSaving ? 'Menyimpan...' : 'Lanjut: Jadwalkan Post'}
                 </Button>
             </div>
         </div>
 
         {/* Right Column: Preview */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 md:p-8 flex flex-col items-center justify-start">
-            <div className="w-full max-w-lg aspect-square bg-gray-100 rounded-md flex items-center justify-center relative overflow-hidden">
-                 {(isLoadingVisual) && (
-                    <div className="flex flex-col items-center text-gray-500">
-                        <Icons.sparkles className="h-8 w-8 animate-spin mb-2" />
-                        <span>Generating...</span>
-                    </div>
-                 )}
-                 {!isLoadingVisual && !generatedImage && (
-                    <div className="text-gray-500 text-center p-4">
-                        Preview visual kontenmu akan muncul di sini.
-                    </div>
-                 )}
-                 {generatedImage && (
+            <div className="w-full max-w-lg aspect-square flex items-center justify-center">
+                {isLoadingVisual ? (
+                    <AIThinkingIndicator generatingWhat="visual" />
+                ) : generatedImage ? (
                     <div className={`relative transition-all duration-300 max-w-full max-h-full ${aspectRatioClasses[aspectRatio]}`}>
                         <img src={generatedImage} alt="Generated ad" className="object-cover w-full h-full rounded-md block" />
                     </div>
-                 )}
+                ) : (
+                    <div className="text-gray-500 text-center p-4">
+                        Preview visual kontenmu akan muncul di sini.
+                    </div>
+                )}
             </div>
-            {generatedImage && (
+            
+            {!isLoadingVisual && generatedImage && (
                 <div className="w-full max-w-lg mt-4 space-y-4">
                     <div>
                         <div className="text-sm font-medium text-gray-700 mb-2 text-center">Crop for Social Media</div>
@@ -308,4 +321,3 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
     </div>
   );
 };
-
