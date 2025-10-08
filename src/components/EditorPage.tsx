@@ -5,6 +5,7 @@ import { Button, Card, CardContent, Icons, Input, ButtonLoader, AIThinkingIndica
 import { aiService } from '../services/geminiService';
 import { createProject } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/Toast'; 
 
 // --- Helper Step Component ---
 const Step: React.FC<{ title: string; number: number; children: React.ReactNode; isActive: boolean; }> = ({ title, number, children, isActive }) => (
@@ -21,6 +22,7 @@ const Step: React.FC<{ title: string; number: number; children: React.ReactNode;
     </div>
 );
 
+// --- urlToFile Function ---
 async function urlToFile(url: string, filename: string, mimeType?: string): Promise<File> {
     const res = await fetch(url);
     const blob = await res.blob();
@@ -41,24 +43,24 @@ type AspectRatio = '1:1' | '4:5' | '9:16';
 
 export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mode, onProceedToSchedule, editingProject }) => {
   const { appUser } = useAuth();
+  const { addToast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoadingVisual, setIsLoadingVisual] = useState(false);
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
   const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Editor content state
   const [generatedImage, setGeneratedImage] = useState<string | null>(editingProject?.mediaUrl || null);
   const [generatedCaptions, setGeneratedCaptions] = useState<string[]>(editingProject?.caption ? [editingProject.caption] : []);
   const [selectedCaption, setSelectedCaption] = useState<string>(editingProject?.caption || '');
   const [generatedHashtags, setGeneratedHashtags] = useState<string>(editingProject?.hashtags || '');
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(editingProject?.voiceoverUrl || null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
-  
-  // Step 1 Input State
   const [prompt, setPrompt] = useState('');
   const [style, setStyle] = useState('Fotorealistik');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  
+  const isBusy = isLoadingVisual || isGeneratingCopy || isGeneratingVoiceover || isSaving;
   
   const canGenerateVisual = (mode === 'idea' && prompt) || (mode === 'photo' && uploadedFile);
 
@@ -92,12 +94,15 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
         if(result) {
             setGeneratedImage(result.imageUrl);
             setCurrentStep(2);
+            addToast("Visual berhasil dibuat!", "success");
         }
     } catch (error) {
         console.error("Error generating visual:", error);
-        alert("Maaf, gagal membuat visual. Silakan coba lagi.");
+        const message = error instanceof Error ? error.message : "Gagal membuat visual. Coba lagi.";
+        addToast(message, "error");
+    } finally {
+        setIsLoadingVisual(false);
     }
-    setIsLoadingVisual(false);
   };
 
   const handleGenerateCopy = async () => {
@@ -109,11 +114,14 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
         setSelectedCaption(result.captions[0] || '');
         setGeneratedHashtags(result.hashtags);
         setVoiceoverUrl(null);
+        addToast("Caption & hashtag berhasil dibuat!", "success");
     } catch(error) {
         console.error("Error generating copy:", error);
-        alert("Maaf, gagal membuat caption. Silakan coba lagi.");
+        const message = error instanceof Error ? error.message : "Gagal membuat caption. Coba lagi.";
+        addToast(message, "error");
+    } finally {
+        setIsGeneratingCopy(false);
     }
-    setIsGeneratingCopy(false);
   }
   
   const handleGenerateVoiceover = async () => {
@@ -123,11 +131,14 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
     try {
         const url = await aiService.generateVoiceover(selectedCaption);
         setVoiceoverUrl(url);
+        addToast("Voiceover berhasil dibuat!", "success");
     } catch (error) {
         console.error("Failed to generate voiceover:", error);
-        alert("Maaf, gagal membuat voiceover saat ini.");
+        const message = error instanceof Error ? error.message : "Gagal membuat voiceover. Coba lagi.";
+        addToast(message, "error");
+    } finally {
+        setIsGeneratingVoiceover(false);
     }
-    setIsGeneratingVoiceover(false);
   };
   
   const handleDownloadImage = () => {
@@ -142,7 +153,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
 
   const handleNext = async () => {
     if (!appUser || !generatedImage || !selectedCaption) {
-        alert("Please generate a visual and select a caption first.");
+        addToast("Harap buat visual dan pilih caption terlebih dahulu.", "info");
         return;
     }
     setIsSaving(true);
@@ -168,10 +179,27 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
 
     } catch (error) {
         console.error("Failed to save and proceed:", error);
-        alert("Sorry, there was an error saving your project. Please try again.");
+        const message = error instanceof Error ? error.message : "Gagal menyimpan proyek. Coba lagi.";
+        addToast(message, "error");
+    } finally {
+        setIsSaving(false);
     }
-    setIsSaving(false);
   }
+  
+  const handleReset = () => {
+    if (window.confirm("Apakah Anda yakin ingin memulai lagi? Semua kemajuan akan hilang.")) {
+        setCurrentStep(1);
+        setGeneratedImage(null);
+        setGeneratedCaptions([]);
+        setSelectedCaption('');
+        setGeneratedHashtags('');
+        setVoiceoverUrl(null);
+        setAspectRatio('1:1');
+        setPrompt('');
+        setUploadedFile(null);
+        addToast("Editor telah direset.", "info");
+    }
+  };
 
   if (!appUser) return null;
 
@@ -180,16 +208,14 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
       <Header user={appUser} onLogout={onLogout} onBack={() => onNavigate('dashboard')} onNavigate={onNavigate} />
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8 overflow-y-auto">
         
-        {/* Left Column: Controls */}
         <div className="flex flex-col gap-8">
             <Step title="Buat Visual Konten" number={1} isActive={currentStep === 1}>
-                {/* Visual Generation Form */}
                 {mode === 'idea' ? (
                     <div className="space-y-4">
                         <label className="font-medium text-gray-700">Jelaskan idemu</label>
-                        <textarea className="w-full p-2 border rounded-md bg-white text-gray-900" rows={4} placeholder="Contoh: Poster diskon 20% untuk kopi susu..." value={prompt} onChange={e => setPrompt(e.target.value)} />
+                        <textarea disabled={isBusy} className="w-full p-2 border rounded-md bg-white text-gray-900 disabled:opacity-50" rows={4} placeholder="Contoh: Poster diskon 20% untuk kopi susu..." value={prompt} onChange={e => setPrompt(e.target.value)} />
                         <label className="font-medium text-gray-700">Pilih Gaya</label>
-                        <select className="w-full p-2 border rounded-md bg-white text-gray-900" value={style} onChange={e => setStyle(e.target.value)}>
+                        <select disabled={isBusy} className="w-full p-2 border rounded-md bg-white text-gray-900 disabled:opacity-50" value={style} onChange={e => setStyle(e.target.value)}>
                             <option>Fotorealistik</option>
                             <option>Minimalis</option>
                             <option>Ilustrasi Kartun</option>
@@ -199,68 +225,75 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                 ) : (
                     <div className="space-y-4">
                         <label className="font-medium text-gray-700">Upload Foto Produk</label>
-                        <Input type="file" accept="image/*" onChange={e => e.target.files && setUploadedFile(e.target.files[0])} />
+                        <Input disabled={isBusy} type="file" accept="image/*" onChange={e => e.target.files && setUploadedFile(e.target.files[0])} />
                         <p className="text-xs text-gray-500">AI akan menyempurnakan fotomu, memperbaiki cahaya, dan menghapus background.</p>
                     </div>
                 )}
-                <Button onClick={handleGenerateVisual} disabled={isLoadingVisual || !canGenerateVisual} className="w-full md:w-auto mt-4">
-                    {isLoadingVisual ? <ButtonLoader /> : 'Buat Visual'}
-                </Button>
+                <div className="flex items-center gap-2 mt-4">
+                  <Button onClick={handleGenerateVisual} disabled={isBusy || !canGenerateVisual} className="w-full md:w-auto">
+                      {isLoadingVisual ? <ButtonLoader /> : 'Buat Visual'}
+                  </Button>
+                  {generatedImage && (
+                    <Button onClick={handleReset} disabled={isBusy} variant="secondary" className="w-full md:w-auto">
+                      Mulai Lagi
+                    </Button>
+                  )}
+                </div>
             </Step>
 
             <Step title="Tulis Pesan & Voiceover" number={2} isActive={currentStep === 2}>
                 <div className="space-y-4">
-                    <Button onClick={handleGenerateCopy} disabled={isGeneratingCopy || !generatedImage} className="w-full md:w-auto">
+                    <Button onClick={handleGenerateCopy} disabled={isBusy || !generatedImage} className="w-full md:w-auto">
                         {isGeneratingCopy ? <ButtonLoader /> : 'Buat Caption & Hashtag Baru'}
                     </Button>
                     
-                    {isGeneratingCopy ? (
-                        <div className="py-8">
-                           <AIThinkingIndicator generatingWhat="copy" />
-                        </div>
-                    ) : (
+                    {isGeneratingCopy ? ( <div className="py-8"><AIThinkingIndicator generatingWhat="copy" /></div> ) : (
                         <>
                             {selectedCaption && (
                                  <div className="space-y-2 pt-4">
                                      <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
-                                     <textarea className="w-full p-3 border rounded-md bg-white text-sm text-gray-900" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
+                                     <textarea disabled={isBusy} className="w-full p-3 border rounded-md bg-white text-sm text-gray-900 disabled:opacity-50" rows={5} value={selectedCaption} onChange={e => setSelectedCaption(e.target.value)} />
                                  </div>
                             )}
                             
                             {generatedCaptions.length > 0 && (
-                                <div className="space-y-2 pt-4">
-                                    <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
-                                    {generatedCaptions.map((cap, i) => (
-                                        <div 
-                                            key={i} 
-                                            className={`text-sm p-3 rounded-md cursor-pointer transition-colors ${
-                                                selectedCaption === cap 
-                                                ? 'bg-[#5890AD] text-white' 
-                                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50'
-                                            }`} 
-                                            onClick={() => setSelectedCaption(cap)}
-                                        >
-                                            {cap}
-                                        </div>
-                                    ))}
-                                </div>
+                                 <div className="space-y-2 pt-4">
+                                     <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
+                                     {generatedCaptions.map((cap, i) => (
+                                         <div 
+                                             key={i} 
+                                             className={`text-sm p-3 rounded-md transition-colors ${
+                                                 isBusy 
+                                                 ? 'pointer-events-none opacity-50' 
+                                                 : 'cursor-pointer'
+                                             } ${
+                                                 selectedCaption === cap 
+                                                 ? 'bg-[#5890AD] text-white' 
+                                                 : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50'
+                                             }`} 
+                                             onClick={() => !isBusy && setSelectedCaption(cap)}
+                                         >
+                                             {cap}
+                                         </div>
+                                     ))}
+                                 </div>
                             )}
 
                             {selectedCaption && (
-                                <div className="pt-4 space-y-2 border-t mt-4">
-                                    <h4 className="font-semibold text-gray-700">Voiceover</h4>
-                                    <Button onClick={handleGenerateVoiceover} disabled={isGeneratingVoiceover} variant="secondary" className="w-full md:w-auto">
-                                        {isGeneratingVoiceover ? <ButtonLoader /> : 'Buat Voiceover Audio'}
-                                    </Button>
-                                    {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
-                                </div>
+                                 <div className="pt-4 space-y-2 border-t mt-4">
+                                     <h4 className="font-semibold text-gray-700">Voiceover</h4>
+                                     <Button onClick={handleGenerateVoiceover} disabled={isBusy} variant="secondary" className="w-full md:w-auto">
+                                         {isGeneratingVoiceover ? <ButtonLoader /> : 'Buat Voiceover Audio'}
+                                     </Button>
+                                     {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
+                                 </div>
                             )}
 
                             {generatedHashtags && (
-                                <div className="space-y-2 pt-4">
-                                    <h4 className="font-semibold text-gray-700">Hashtag:</h4>
-                                    <div className="text-sm p-3 bg-white text-gray-800 border border-gray-200 rounded-md font-mono">{generatedHashtags}</div>
-                                </div>
+                                 <div className="space-y-2 pt-4">
+                                     <h4 className="font-semibold text-gray-700">Hashtag:</h4>
+                                     <div className="text-sm p-3 bg-white text-gray-800 border border-gray-200 rounded-md font-mono">{generatedHashtags}</div>
+                                 </div>
                             )}
                         </>
                     )}
@@ -268,13 +301,12 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
             </Step>
 
             <div className="flex-shrink-0 pt-6 border-t border-gray-200 mt-auto">
-                <Button onClick={handleNext} className="w-full" disabled={!generatedImage || !selectedCaption || isSaving}>
+                <Button onClick={handleNext} className="w-full" disabled={isBusy || !generatedImage || !selectedCaption}>
                     {isSaving ? 'Menyimpan...' : 'Lanjut: Jadwalkan Post'}
                 </Button>
             </div>
         </div>
 
-        {/* Right Column: Preview */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 md:p-8 flex flex-col items-center justify-start">
             <div className="w-full max-w-lg aspect-square flex items-center justify-center">
                 {isLoadingVisual ? (
@@ -298,6 +330,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                             {(['1:1', '4:5', '9:16'] as AspectRatio[]).map(ar => (
                                 <Button
                                     key={ar}
+                                    disabled={isBusy}
                                     variant={aspectRatio === ar ? 'primary' : 'secondary'}
                                     onClick={() => setAspectRatio(ar)}
                                     className="text-xs"
@@ -309,11 +342,14 @@ export const EditorPage: React.FC<EditorPageProps> = ({ onLogout, onNavigate, mo
                             ))}
                         </div>
                     </div>
-                     <div>
-                        <Button variant="secondary" onClick={handleDownloadImage} className="w-full text-xs">
-                           Download Image
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="secondary" onClick={handleGenerateVisual} disabled={isBusy || !canGenerateVisual} className="w-full text-xs">
+                          Buat Ulang Visual
+                      </Button>
+                        <Button variant="secondary" onClick={handleDownloadImage} disabled={isBusy} className="w-full text-xs">
+                            Download Image
                         </Button>
-                    </div>
+                  </div>
                 </div>
             )}
         </div>

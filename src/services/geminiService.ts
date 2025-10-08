@@ -115,7 +115,17 @@ class GeminiService {
   async generateImageFromIdea(prompt: string, style: string): Promise<{ imageUrl: string }> {
     const response = await this.ai.models.generateImages({
       model: 'imagen-4.0-generate-001',
-      prompt: `A professional, high-quality social media advertisement graphic. The ad is for: "${prompt}". The style should be: ${style}. The image should be eye-catching and suitable for marketing in Indonesia. Do not include any text in the image.`,
+prompt: `
+Create a professional, high-quality visual design for: "${prompt}".
+Preferred style: ${style || "modern and eye-catching"}.
+Target audience: Indonesia.
+
+If the design type or description implies that text is required (e.g., posters, flyers, announcements, infographics, event promotions), include clean and legible text that enhances the message.
+
+If the design type focuses on visuals (e.g., photography, artwork, background images, mood boards, product shots), avoid adding any text.
+
+Ensure the final image looks polished, marketing-ready, and contextually appropriate for Indonesian audiences.
+`,
       config: {
         numberOfImages: 1,
         aspectRatio: '1:1',

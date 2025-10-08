@@ -140,7 +140,6 @@ export const SchedulePage: React.FC<SchedulePageProps> = ({ onLogout, onNavigate
                                 ) : (
                                     <img src={project.mediaUrl} alt="Ad preview" className="w-full aspect-square object-cover rounded-t-lg" />
                                 )}
-                                <Icons.download className="h-9 w-9" />
                                 <Button
                                     variant="secondary"
                                     onClick={handleDownloadMedia}

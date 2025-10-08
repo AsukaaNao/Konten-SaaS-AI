@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+// Import the ToastProvider
+import { ToastProvider } from "@/components/Toast"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,7 +15,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// ✅ This is the right way to set title, description, and favicon in Next.js 13+
 export const metadata: Metadata = {
   title: "RICE AI Consulting",
   description: "AI-Powered Solutions for Businesses — by RICE AI Consulting.",
@@ -50,7 +51,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        {/* Wrap both providers around the children */}
+        <AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

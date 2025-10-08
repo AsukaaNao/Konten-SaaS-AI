@@ -1,154 +1,160 @@
 import React, { useState, createContext, useContext, useRef, useEffect } from 'react';
 
+const commonSvgProps = {
+  xmlns: "http://www.w3.org/2000/svg",
+  width: "24",
+  height: "24",
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: "2",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+};
+
 // A collection of SVG icons used throughout the application.
 export const Icons = {
-  
-  logo: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, viewBox: '0 0 24 24', fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg' },
-      React.createElement('path', {
-        d: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5-10 5zM12 14.5l-10-5L12 5l10 4.5-10 5z',
-      })
-    ),
-  spinner: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      {
-        ...props,
-        viewBox: '0 0 64 64',
-        xmlns: 'http://www.w3.org/2000/svg'
-      },
-      React.createElement('path', { d: 'M46.03,32c0,-2.751 2.233,-4.985 4.985,-4.985c2.751,0 4.985,2.234 4.985,4.985c0,2.751 -2.234,4.985 -4.985,4.985c-2.752,0 -4.985,-2.234 -4.985,-4.985Z', fill: '#d9d9d9' }),
-      React.createElement('path', { d: 'M41.92,41.92c1.946,-1.945 5.105,-1.945 7.051,0c1.945,1.946 1.945,5.105 0,7.051c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051Z', fill: '#b3b3b3' }),
-      React.createElement('circle', { cx: '32', cy: '51.015', r: '4.985', fill: '#8c8c8c' }),
-      React.createElement('path', { d: 'M22.08,41.92c1.945,1.946 1.945,5.105 0,7.051c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051c1.946,-1.945 5.105,-1.945 7.051,0Z', fill: '#666' }),
-      React.createElement('path', { d: 'M17.97,32c0,2.751 -2.233,4.985 -4.985,4.985c-2.751,0 -4.985,-2.234 -4.985,-4.985c0,-2.751 2.234,-4.985 4.985,-4.985c2.752,0 4.985,2.234 4.985,4.985Z', fill: '#404040' }),
-      React.createElement('path', { d: 'M22.08,22.08c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051c1.946,-1.945 5.105,-1.945 7.051,0c1.945,1.946 1.945,5.105 0,7.051Z', fill: '#404040' }),
-      React.createElement('circle', { cx: '32', cy: '12.985', r: '4.985', fill: '#000000' })
-    ),
-  add: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M12 4v16m8-8H4' })
-    ),
+  // --- New & Updated Icons from your request ---
+  logo: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props, fill: 'currentColor', strokeWidth: "0" },
+      React.createElement('path', {
+        d: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5-10-5-10 5zM12 14.5l-10-5L12 5l10 4.5-10 5z',
+      })
+    ),
+  spinner: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...props, viewBox: '0 0 64 64', xmlns: 'http://www.w3.org/2000/svg' },
+      React.createElement('path', { d: 'M46.03,32c0,-2.751 2.233,-4.985 4.985,-4.985c2.751,0 4.985,2.234 4.985,4.985c0,2.751 -2.234,4.985 -4.985,4.985c-2.752,0 -4.985,-2.234 -4.985,-4.985Z', fill: '#d9d9d9' }),
+      React.createElement('path', { d: 'M41.92,41.92c1.946,-1.945 5.105,-1.945 7.051,0c1.945,1.946 1.945,5.105 0,7.051c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051Z', fill: '#b3b3b3' }),
+      React.createElement('circle', { cx: '32', cy: '51.015', r: '4.985', fill: '#8c8c8c' }),
+      React.createElement('path', { d: 'M22.08,41.92c1.945,1.946 1.945,5.105 0,7.051c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051c1.946,-1.945 5.105,-1.945 7.051,0Z', fill: '#666' }),
+      React.createElement('path', { d: 'M17.97,32c0,2.751 -2.233,4.985 -4.985,4.985c-2.751,0 -4.985,-2.234 -4.985,-4.985c0,-2.751 2.234,-4.985 4.985,-4.985c2.752,0 4.985,2.234 4.985,4.985Z', fill: '#404040' }),
+      React.createElement('path', { d: 'M22.08,22.08c-1.946,1.945 -5.105,1.945 -7.051,0c-1.945,-1.946 -1.945,-5.105 0,-7.051c1.946,-1.945 5.105,-1.945 7.051,0c1.945,1.946 1.945,5.105 0,7.051Z', fill: '#404040' }),
+      React.createElement('circle', { cx: '32', cy: '12.985', r: '4.985', fill: '#000000' })
+    ),
+  add: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M12 4v16m8-8H4' })
+    ),
   close: (props: React.SVGProps<SVGSVGElement>) => (
-    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2" },
-      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 18L18 6M6 6l12 12" })
-    )
-  ),
-  sparkles: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', {
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        strokeWidth: 2,
-        d: 'M5 3v4M3 5h4M16 17v4m-2 2h4M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-      }),
-      React.createElement('path', {
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        strokeWidth: 2,
-        d: 'M12 2v2m0 16v2m-7-9H3m18 0h-2m-5-5l-1-1m8 8l-1-1',
-      })
-    ),
+    React.createElement('svg', { ...commonSvgProps, ...props },
+      React.createElement('path', { d: "M6 18L18 6M6 6l12 12" })
+    )
+  ),
+  sparkles: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M5 3v4M3 5h4M16 17v4m-2 2h4M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }),
+      React.createElement('path', { d: 'M12 2v2m0 16v2m-7-9H3m18 0h-2m-5-5l-1-1m8 8l-1-1' })
+    ),
   clock: (props: React.SVGProps<SVGSVGElement>) =>
     React.createElement(
-        'svg',
-        { ...props, viewBox: '0 0 24 24', fill: 'currentColor', xmlns: 'http://www.w3.org/2000/svg' },
-        React.createElement('path', {
-            d: 'M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z',
-        })
+      'svg',
+      { ...commonSvgProps, ...props, fill: 'currentColor', strokeWidth: '0' },
+      React.createElement('path', { d: 'M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z' })
     ),
-  // CORRECTED: This icon is built to be resizable. It has no hardcoded width or height.
   download: (props: React.SVGProps<SVGSVGElement>) =>
     React.createElement(
-        'svg',
-        { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 2 },
-        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', d: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' })
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4' })
     ),
-  // CORRECTED: This icon is also built to be resizable.
   clipboard: (props: React.SVGProps<SVGSVGElement>) =>
     React.createElement(
-        'svg',
-        { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 2 },
-        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', d: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' })
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' })
     ),
-  logout: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', {
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        strokeWidth: 2,
-        d: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1',
-      })
-    ),
-  cog: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', {
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        strokeWidth: 2,
-        d: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
-      }),
-      React.createElement('path', {
-          strokeLinecap: 'round',
-          strokeLinejoin: 'round',
-          strokeWidth: 2,
-          d: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z'
-      })
-    ),
-  chevronDown: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M19 9l-7 7-7-7' })
-    ),
-  arrowLeft: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M10 19l-7-7m0 0l7-7m-7 7h18' })
-    ),
-  video: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...props, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
-      React.createElement('path', {
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        strokeWidth: 2,
-        d: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z',
-      })
-    ),
-  imageToVideo: (props: React.SVGProps<SVGSVGElement>) => 
-    React.createElement('svg', { ...props, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round'},
-      React.createElement('path', { d: 'M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-1 1.73' }),
-      React.createElement('path', { d: 'm7 14 3-3 4 4' }),
-      React.createElement('path', { d: 'm14 10 1-1' }),
-      React.createElement('path', { d: 'M16 19h6' }),
-      React.createElement('path', { d: 'M19 16v6' })
-    ),
-  google: (props: React.SVGProps<SVGSVGElement>) => 
-    React.createElement('svg', { ...props, viewBox: '0 0 48 48', xmlns: 'http://www.w3.org/2000/svg' },
-      React.createElement('path', { fill: '#FFC107', d: 'M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z' }),
-      React.createElement('path', { fill: '#FF3D00', d: 'M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z' }),
-      React.createElement('path', { fill: '#4CAF50', d: 'M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.918l-6.522,5.023C9.505,39.556,16.227,44,24,44z' }),
-      React.createElement('path', { fill: '#1976D2', d: 'M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.012,35.842,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z' })
-    ),
-  trash: (props: React.SVGProps<SVGSVGElement>) => (
-    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" },
-      React.createElement('path', { d: "M3 6h18" }),
-      React.createElement('path', { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
-    )
-  ),
+  logout: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1' })
+    ),
+  cog: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' }),
+      React.createElement('path', { d: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z' })
+    ),
+  chevronDown: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M19 9l-7 7-7-7' })
+    ),
+  arrowLeft: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M10 19l-7-7m0 0l7-7m-7 7h18' })
+    ),
+  video: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z' })
+    ),
+  imageToVideo: (props: React.SVGProps<SVGSVGElement>) => 
+    React.createElement('svg', { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M10 22H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-1 1.73' }),
+      React.createElement('path', { d: 'm7 14 3-3 4 4' }),
+      React.createElement('path', { d: 'm14 10 1-1' }),
+      React.createElement('path', { d: 'M16 19h6' }),
+      React.createElement('path', { d: 'M19 16v6' })
+    ),
+  google: (props: React.SVGProps<SVGSVGElement>) => 
+    React.createElement('svg', { ...props, viewBox: '0 0 48 48', xmlns: 'http://www.w3.org/2000/svg' },
+      React.createElement('path', { fill: '#FFC107', d: 'M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z' }),
+      React.createElement('path', { fill: '#FF3D00', d: 'M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z' }),
+      React.createElement('path', { fill: '#4CAF50', d: 'M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.657-3.356-11.303-7.918l-6.522,5.023C9.505,39.556,16.227,44,24,44z' }),
+      React.createElement('path', { fill: '#1976D2', d: 'M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.012,35.842,44,30.138,44,24C44,22.659,43.862,21.35,43.611,20.083z' })
+    ),
+  trash: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement('svg', { ...commonSvgProps, ...props },
+      React.createElement('path', { d: "M3 6h18" }),
+      React.createElement('path', { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
+    ),
+    
+  // --- Original Icons ---
+  edit: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' }),
+      React.createElement('path', { d: 'm15 5 4 4' })
+    ),
+  folder: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L8.6 3.3a2 2 0 0 0-1.7-.9H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z' })
+    ),
+  check: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'M20 6 9 17l-5-5' })
+    ),
+  chevronLeft: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'm15 18-6-6 6-6' })
+    ),
+  chevronRight: (props: React.SVGProps<SVGSVGElement>) =>
+    React.createElement(
+      'svg',
+      { ...commonSvgProps, ...props },
+      React.createElement('path', { d: 'm9 18 6-6-6-6' })
+    ),
 };
 
 // Generic UI Components (like a mini shadcn/ui)
