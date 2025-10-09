@@ -18,6 +18,7 @@ export interface Project {
   status: "draft" | "completed";
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  mode?: "idea" | "photo"; 
 }
 
 // Corresponds to the 'assets' sub-collection for a project

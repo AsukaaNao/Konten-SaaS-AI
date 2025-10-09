@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RICE AI Consulting",
-  description: "AI-Powered Solutions for Businesses — by RICE AI Consulting.",
+  title: "RICE AI Consultant",
+  description: "AI-Powered Solutions for Businesses — by RICE AI Consultant.",
   icons: {
     icon: [
       {
