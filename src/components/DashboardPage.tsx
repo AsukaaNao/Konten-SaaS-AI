@@ -317,7 +317,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                 prompt: "Promo Buy 1 get 1 Burger Place Cikarang",
               },
               {
-                src: "/gallery/matcha.png",
+                src: "/gallery/matcha2.png",
                 prompt: "Poster Diskon 50% Iced Matcha Latte setiap hari senin",
               },
               {
