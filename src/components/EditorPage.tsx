@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Page, EditorMode, AppProject } from "@/types/index";
-import { Header } from "@/components/Header";
+import { Page, EditorMode, AppProject } from "../types/index";
+import { Header } from "./Header";
 import {
   Icons,
   Button,
@@ -11,11 +11,11 @@ import {
   Spinner,
   AIThinkingIndicator,
   ButtonLoader,
-} from "@/constants";
-import { aiService } from "@/services/geminiService";
-import { createProject, updateInstagramConnection } from "@/services/firebase";
-import { useAuth } from "@/context/AuthContext";
-import { useToast } from "@/components/Toast";
+} from "../constants";
+import { aiService } from "../services/geminiService";
+import { createProject, updateInstagramConnection } from "../services/firebase";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "./Toast";
 
 interface EditorPageProps {
   onLogout: () => Promise<void>;
@@ -41,38 +41,25 @@ export const EditorPage: React.FC<EditorPageProps> = ({
   const { appUser } = useAuth();
   const { addToast } = useToast();
 
-  const [currentStep, setCurrentStep] = useState(1);
   const [isLoadingVisual, setIsLoadingVisual] = useState(false);
   const [isGeneratingCopy, setIsGeneratingCopy] = useState(false);
   const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isCropping, setIsCropping] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasGeneratedCaption, setHasGeneratedCaption] = useState(false);
 
-  const [generatedImages, setGeneratedImages] = useState<string[]>(
-    editingProject?.mediaUrl ? [editingProject.mediaUrl] : []
-  );
-  const [originalImage, setOriginalImage] = useState<string | null>(
-    editingProject?.mediaUrl || null
-  );
-  const [selectedImage, setSelectedImage] = useState<string | null>(
-    editingProject?.mediaUrl || null
-  );
+  const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const [generatedCaptions, setGeneratedCaptions] = useState<string[]>(
-    editingProject?.caption ? [editingProject.caption] : []
-  );
-  const [selectedCaption, setSelectedCaption] = useState<string>(
-    editingProject?.caption || ""
-  );
-  const [generatedHashtags, setGeneratedHashtags] = useState<string>(
-    editingProject?.hashtags || ""
-  );
-  const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(
-    editingProject?.voiceoverUrl || null
-  );
+  const [generatedCaptions, setGeneratedCaptions] = useState<string[]>([]);
+  const [selectedCaption, setSelectedCaption] = useState<string>("");
+  const [generatedHashtags, setGeneratedHashtags] = useState<string>("");
+  const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
 
   const [aspectRatio, setAspectRatio] = useState<"1:1" | "4:5" | "9:16">("1:1");
-  const [prompt, setPrompt] = useState(editingProject?.caption || "");
+  const [prompt, setPrompt] = useState("");
   const [style, setStyle] = useState("Fotorealistik");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
@@ -82,20 +69,32 @@ export const EditorPage: React.FC<EditorPageProps> = ({
   const canGenerateVisual = (mode === "idea" && prompt) || (mode === "photo" && uploadedFile);
 
   useEffect(() => {
-    // Handles editing a saved project with media
-    if (editingProject?.mediaUrl) {
-      setGeneratedImages([editingProject.mediaUrl]);
-      setOriginalImage(editingProject.mediaUrl);
-      setSelectedImage(editingProject.mediaUrl);
-      setSelectedCaption(editingProject.caption || "");
-      setPrompt(editingProject.caption || ""); // Also set prompt for context
-      setGeneratedHashtags(editingProject.hashtags || "");
-      setVoiceoverUrl(editingProject.voiceoverUrl || null);
-      setCurrentStep(2);
+    if (editingProject?.id) {
+        setGeneratedImages(editingProject.mediaUrl ? [editingProject.mediaUrl] : []);
+        setOriginalImage(editingProject.mediaUrl || null);
+        setSelectedImage(editingProject.mediaUrl || null);
+        setGeneratedCaptions(editingProject.caption ? [editingProject.caption] : []);
+        setSelectedCaption(editingProject.caption || "");
+        setPrompt(editingProject.caption || "");
+        setGeneratedHashtags(editingProject.hashtags || "");
+        setVoiceoverUrl(editingProject.voiceoverUrl || null);
+        setHasGeneratedCaption(!!editingProject.caption);
     } 
-    // Handles pre-filling prompt from dashboard quick-start
-    else if (editingProject?.caption) {
-      setPrompt(editingProject.caption);
+    else if (editingProject?.caption && !editingProject.id) {
+        setPrompt(editingProject.caption);
+        setHasGeneratedCaption(false);
+    }
+    else {
+        setPrompt('');
+        setSelectedCaption('');
+        setGeneratedImages([]);
+        setSelectedImage(null);
+        setOriginalImage(null);
+        setGeneratedCaptions([]);
+        setGeneratedHashtags("");
+        setVoiceoverUrl(null);
+        setUploadedFile(null);
+        setHasGeneratedCaption(false);
     }
   }, [editingProject]);
 
@@ -107,7 +106,6 @@ export const EditorPage: React.FC<EditorPageProps> = ({
     return new File([blob], filename, { type });
   }
 
-  // generate visual with guest limit
   const handleGenerateVisual = async () => {
     if (mode === "idea" && !prompt.trim()) {
       addToast("Masukkan ide atau deskripsi terlebih dahulu.", "info");
@@ -118,13 +116,11 @@ export const EditorPage: React.FC<EditorPageProps> = ({
       return;
     }
 
-    // guest check
     if (!appUser) {
       if (guestGenerations >= maxGuestGenerations) {
         addToast("Batas percobaan gratis telah tercapai. Silakan login untuk melanjutkan.", "warning");
         return;
       }
-    //   addToast(`Percobaan ke-${guestGenerations + 1} dari ${maxGuestGenerations}`, "info");
     }
 
     setIsLoadingVisual(true);
@@ -149,10 +145,8 @@ export const EditorPage: React.FC<EditorPageProps> = ({
         setOriginalImage(firstImage);
         setSelectedImage(firstImage);
         setAspectRatio("1:1");
-        setCurrentStep(2);
         addToast("Visual berhasil dibuat! Pilih yang terbaik.", "success");
 
-        // notify parent about guest generation
         if (!appUser) onGuestGenerate();
       } else {
         throw new Error("No images returned from AI service");
@@ -166,7 +160,6 @@ export const EditorPage: React.FC<EditorPageProps> = ({
     }
   };
 
-  // outpaint / recompose helper (kept from original)
   async function recomposeImageOnCanvas(
     imageUrl: string,
     aspectRatio: "1:1" | "4:5" | "9:16"
@@ -195,20 +188,8 @@ export const EditorPage: React.FC<EditorPageProps> = ({
 
         canvas.width = newWidth;
         canvas.height = newHeight;
-
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = 1;
-        tempCanvas.height = 1;
-        const tempCtx = tempCanvas.getContext("2d");
-        if (tempCtx) {
-          tempCtx.drawImage(originalImage, 0, 0, 1, 1);
-          const pixelData = tempCtx.getImageData(0, 0, 1, 1).data;
-          const bgColor = `rgba(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]}, ${
-            pixelData[3] / 255
-          })`;
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, newWidth, newHeight);
-        }
+        
+        ctx.clearRect(0, 0, newWidth, newHeight);
 
         const offsetX = (newWidth - originalWidth) / 2;
         const offsetY = (newHeight - originalHeight) / 2;
@@ -233,19 +214,14 @@ export const EditorPage: React.FC<EditorPageProps> = ({
 
     setIsCropping(true);
     try {
-      let outpaintType: "photographic" | "design" = "photographic";
-      if (mode === "idea") {
-        outpaintType = "design";
-      }
-
+      const canvasImageUrl = await recomposeImageOnCanvas(originalImage, newAspectRatio);
       let finalImageUrl: string;
 
-      if (outpaintType === "design") {
-        const canvasImageUrl = await recomposeImageOnCanvas(originalImage, newAspectRatio);
+      if (mode === "idea") {
         const enhancedResult = await aiService.enhanceCanvasBackground(canvasImageUrl);
         finalImageUrl = enhancedResult.imageUrl;
       } else {
-        const result = await aiService.outpaintImage(originalImage, newAspectRatio, "photographic");
+        const result = await aiService.outpaintImage(canvasImageUrl, newAspectRatio, "photographic");
         finalImageUrl = result.imageUrl;
       }
 
@@ -276,6 +252,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({
       setSelectedCaption(result.captions?.[0] || "");
       setGeneratedHashtags(result.hashtags || "");
       setVoiceoverUrl(null);
+      setHasGeneratedCaption(true);
       addToast("Caption & hashtag berhasil dibuat!", "success");
     } catch (error) {
       console.error("Error generating copy:", error);
@@ -324,9 +301,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({
       let projectId: string | undefined = editingProject?.id;
 
       if (appUser) {
-        // If editing update logic should be implemented (omitted here for brevity).
-        // Save new project if no edit id
-        if (!editingProject) {
+        if (!editingProject?.id) {
           projectId = await createProject(appUser.uid, {
             file: imageFileToUpload,
             projectType: "image",
@@ -334,7 +309,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({
             hashtags: generatedHashtags,
           });
         } else {
-          // Optionally implement updateProject here if you have it
+          // TODO: Implement updateProject logic here
         }
       } else {
         addToast("Anda belum login — proyek tidak akan tersimpan di akun.", "warning");
@@ -359,7 +334,6 @@ export const EditorPage: React.FC<EditorPageProps> = ({
 
   const handleReset = () => {
     if (confirm("Apakah Anda yakin ingin memulai lagi? Semua kemajuan akan hilang.")) {
-      setCurrentStep(1);
       setGeneratedImages([]);
       setSelectedImage(null);
       setOriginalImage(null);
@@ -370,13 +344,42 @@ export const EditorPage: React.FC<EditorPageProps> = ({
       setAspectRatio("1:1");
       setPrompt("");
       setUploadedFile(null);
+      setHasGeneratedCaption(false);
       addToast("Editor telah direset.", "info");
     }
   };
 
-  if (!appUser) {
-    // still render full UI for guests (we don't return null)
-  }
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+        if (files[0].type.startsWith('image/')) {
+             setUploadedFile(files[0]);
+        } else {
+            addToast("Please drop an image file.", "warning");
+        }
+    }
+  };
 
   return (
     <div className="flex flex-col max-h-screen">
@@ -384,62 +387,82 @@ export const EditorPage: React.FC<EditorPageProps> = ({
       <main className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-8 p-4 md:p-8 overflow-y-auto">
         {/* Left: Controls */}
         <div className="flex flex-col gap-8">
-          <div>
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {editingProject ? "Edit Proyek" : mode === "photo" ? "Buat Konten dari Foto" : "Buat Desain dari Ide"}
-              </h2>
-            </div>
-
-            {mode === "idea" ? (
-              <div className="space-y-4">
-                <label className="font-medium text-gray-700">Jelaskan idemu</label>
-                <textarea disabled={isBusy} value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4} className="w-full p-2 border rounded-md bg-white" placeholder="Contoh: Poster diskon 20% untuk kopi susu..." />
-                <label className="font-medium text-gray-700">Pilih Gaya</label>
-                <select disabled={isBusy} value={style} onChange={(e) => setStyle(e.target.value)} className="w-full p-2 border rounded-md bg-white">
-                  <option>Fotorealistik</option>
-                  <option>Minimalis</option>
-                  <option>Ilustrasi Kartun</option>
-                  <option>Cat Air</option>
-                </select>
+            <div>
+              <div className="mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {editingProject?.id ? "Edit Proyek" : mode === "photo" ? "Buat Konten dari Foto" : "Buat Desain dari Ide"}
+                </h2>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <label className="font-medium text-gray-700">Upload Foto Produk</label>
-                <input disabled={isBusy} type="file" accept="image/*" onChange={(e) => e.target.files && setUploadedFile(e.target.files[0])} />
-                <p className="text-xs text-gray-900">AI akan membuat fotomu menjadi 1:1 dan siap di-crop.</p>
-              </div>
-            )}
 
-            <p className="text-xs text-gray-500 mt-4">Visual akan dibuat dalam format 1:1 (persegi) terlebih dahulu, lalu bisa Anda potong (crop) sesuai kebutuhan.</p>
-
-            <div className="flex items-center gap-2 mt-4">
-              <Button onClick={handleGenerateVisual} disabled={isBusy || !canGenerateVisual} className="w-full md:w-auto">
-                {isLoadingVisual ? <ButtonLoader /> : editingProject ? "Perbarui Visual" : "Buat Visual"}
-              </Button>
-              {selectedImage && (<Button onClick={handleReset} disabled={isBusy} variant="secondary" className="w-full md:w-auto"> Mulai Lagi </Button>)}
-            </div>
-          </div>
-
-          {/* Step 2: Copy & Voiceover */}
-          <div>
-            <div className="space-y-4">
-              <Button onClick={handleGenerateCopy} disabled={isBusy || !selectedImage} className="w-full md:w-auto">
-                {isGeneratingCopy ? <ButtonLoader /> : 'Buat Caption & Hashtag Baru'}
-              </Button>
-
-              {isGeneratingCopy ? (
-                <div className="py-8"><AIThinkingIndicator generatingWhat="copy" /></div>
-              ) : (
-                <div>
-                  {selectedCaption && (
-                    <div className="space-y-2 pt-4">
-                      <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
-                      <textarea disabled={isBusy} className="w-full p-3 border rounded-md bg-white text-sm" rows={5} value={selectedCaption} onChange={(e) => setSelectedCaption(e.target.value)} />
+              {!editingProject?.id ? (
+                 <>
+                    {mode === 'idea' ? (
+                      <div className="space-y-4">
+                        <label className="font-medium text-gray-700">Jelaskan idemu</label>
+                        <textarea disabled={isBusy} value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={4} className="w-full p-2 border rounded-md bg-white" placeholder="Contoh: Poster diskon 20% untuk kopi susu..." />
+                        <label className="font-medium text-gray-700">Pilih Gaya</label>
+                        <select disabled={isBusy} value={style} onChange={(e) => setStyle(e.target.value)} className="w-full p-2 border rounded-md bg-white">
+                          <option>Fotorealistik</option>
+                          <option>Minimalis</option>
+                          <option>Ilustrasi Kartun</option>
+                          <option>Cat Air</option>
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                          <label className="font-medium text-gray-700">Upload Foto Produk</label>
+                          <label 
+                            htmlFor="file-upload" 
+                            className={`flex flex-col items-center justify-center w-full h-40 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none ${isDragging ? 'border-blue-500' : 'border-gray-300'}`}
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            onDragOver={handleDragOver}
+                            onDrop={handleDrop}
+                          >
+                              <span className="flex items-center space-x-2">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                  </svg>
+                                  <span className="font-medium text-gray-600">
+                                      {uploadedFile ? uploadedFile.name : 'Klik untuk upload atau drag & drop'}
+                                  </span>
+                              </span>
+                          </label>
+                          <input id="file-upload" name="file-upload" type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files && setUploadedFile(e.target.files[0])} />
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-4">Visual akan dibuat dalam format 1:1 (persegi) terlebih dahulu, lalu bisa Anda potong (crop) sesuai kebutuhan.</p>
+                    <div className="flex items-center gap-2 mt-4">
+                        <Button onClick={handleGenerateVisual} disabled={isBusy || !canGenerateVisual} className="w-full md:w-auto">
+                            {isLoadingVisual ? <ButtonLoader /> : "Buat Visual"}
+                        </Button>
+                         {selectedImage && (<Button onClick={handleReset} disabled={isBusy} variant="secondary" className="w-full md:w-auto"> Mulai Lagi </Button>)}
                     </div>
-                  )}
+                 </>
+              ) : <div className="p-4 bg-gray-100 rounded-md text-sm text-gray-700">Anda sedang mengedit proyek yang sudah ada. Bagian caption & hashtag ada di bawah.</div>}
+            </div>
+          
+          <div className="space-y-4">
+            <Button onClick={handleGenerateCopy} disabled={isBusy || !selectedImage} className="w-full md:w-auto">
+              {isGeneratingCopy ? <ButtonLoader /> : 'Buat Ulang Caption & Hashtag'}
+            </Button>
 
-                  {generatedCaptions.length > 0 && (
+            {isGeneratingCopy ? (
+              <div className="py-8"><AIThinkingIndicator generatingWhat="copy" /></div>
+            ) : (
+                <div>
+                  <div className="space-y-2 pt-4">
+                    <label className="font-semibold text-gray-700">Edit Caption Terpilih:</label>
+                    <textarea
+                      disabled={isBusy || !selectedImage}
+                      className="w-full p-3 border rounded-md bg-white text-sm disabled:bg-gray-100"
+                      rows={5}
+                      value={selectedCaption}
+                      onChange={(e) => setSelectedCaption(e.target.value)}
+                    />
+                  </div>
+
+                  {generatedCaptions.length > 1 && (
                     <div className="space-y-2 pt-4">
                       <h4 className="font-semibold text-gray-700">Pilihan Caption (Klik untuk memilih):</h4>
                       {generatedCaptions.map((cap, i) => (
@@ -450,31 +473,37 @@ export const EditorPage: React.FC<EditorPageProps> = ({
                     </div>
                   )}
 
-                  {selectedCaption && (
-                    <div className="pt-4 space-y-2 border-t mt-4">
-                      <h4 className="font-semibold text-gray-700">Voiceover</h4>
-                      <Button onClick={handleGenerateVoiceover} disabled={isBusy} variant="secondary" className="w-full md:w-auto">
-                        {isGeneratingVoiceover ? <ButtonLoader /> : 'Buat Voiceover Audio'}
-                      </Button>
-                      {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
-                    </div>
-                  )}
-
-                  {generatedHashtags && (
-                    <div className="space-y-2 pt-4">
-                      <h4 className="font-semibold text-gray-700">Hashtag:</h4>
-                      <div className="text-sm p-3 bg-white text-gray-800 border border-gray-200 rounded-md font-mono">{generatedHashtags}</div>
-                    </div>
+                  {hasGeneratedCaption && (
+                    <>
+                      <div className="pt-4 space-y-2 border-t mt-4">
+                        <h4 className="font-semibold text-gray-700">Voiceover</h4>
+                        <Button onClick={handleGenerateVoiceover} disabled={isBusy || !selectedCaption} variant="secondary" className="w-full md:w-auto">
+                          {isGeneratingVoiceover ? <ButtonLoader /> : 'Buat Voiceover Audio'}
+                        </Button>
+                        {voiceoverUrl && <audio controls src={voiceoverUrl} className="w-full mt-2" />}
+                      </div>
+                      
+                      <div className="space-y-2 pt-4">
+                        <label className="font-semibold text-gray-700">Hashtag:</label>
+                        <textarea
+                          disabled={isBusy || !selectedImage}
+                          className="w-full p-3 border rounded-md bg-white text-sm font-mono disabled:bg-gray-100"
+                          rows={3}
+                          value={generatedHashtags}
+                          onChange={(e) => setGeneratedHashtags(e.target.value)}
+                          placeholder="#contoh #hashtag"
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
-              )}
-            </div>
+            )}
           </div>
-
+         
           <div className="flex-shrink-0 pt-6 border-t border-gray-200 mt-auto">
-            <Button onClick={handleNext} className="w-full" disabled={isSaving || !selectedImage || !selectedCaption}>
-              {isSaving ? 'Menyimpan...' : editingProject ? 'Perbarui & Lanjutkan' : 'Lanjut: Jadwalkan Post'}
-            </Button>
+             <Button onClick={handleNext} className="w-full" disabled={isSaving || !selectedImage || !selectedCaption}>
+                 {isSaving ? 'Menyimpan...' : editingProject?.id ? 'Perbarui & Lanjutkan' : 'Lanjut: Jadwalkan Post'}
+             </Button>
           </div>
         </div>
 
@@ -527,7 +556,7 @@ export const EditorPage: React.FC<EditorPageProps> = ({
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-4">
-                <Button variant="secondary" onClick={handleGenerateVisual} disabled={isBusy || !canGenerateVisual} className="w-full text-xs">
+                <Button variant="secondary" onClick={handleGenerateVisual} disabled={isBusy || (!canGenerateVisual && !editingProject?.id)} className="w-full text-xs">
                   Buat Ulang Visual
                 </Button>
                 <Button variant="secondary" onClick={handleDownloadImage} disabled={isBusy} className="w-full text-xs">
