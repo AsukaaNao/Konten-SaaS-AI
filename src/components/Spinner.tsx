@@ -369,7 +369,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ onLogout, onNavigate
 
 // --- Settings Page ---
 interface SettingsPageProps {
-    user: User;
+    user?: User | null;
     onLogout: () => void;
     onNavigate: (page: Page) => void;
     onToggleConnection: () => void;
@@ -381,14 +381,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
     onNavigate,
     onToggleConnection,
 }) => {
+    // Keep UI identical — provide safe fallbacks for guests
+    const displayName = user?.displayName ?? "Guest User";
+    const email = user?.email ?? "guest@example.com";
+    const isInstagramConnected = user?.isInstagramConnected ?? false;
+
     return (
         <div className="min-h-screen bg-gray-50">
-            <Header
-                user={user}
-                onLogout={onLogout}
-                onBack={() => onNavigate('dashboard')}
-                onNavigate={onNavigate}
-            />
+            <Header user={user ?? undefined} onLogout={onLogout} onBack={() => onNavigate("dashboard")} onNavigate={onNavigate} />
             <main className="container mx-auto p-4 md:p-8 max-w-2xl">
                 <h2 className="text-3xl font-extrabold text-gray-800 mb-8">Settings</h2>
 
@@ -400,16 +400,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-500">
-                                    Nama
-                                </label>
-                                <p className="text-gray-900">{user.displayName}</p>
+                                <label className="block text-sm font-medium text-gray-500">Nama</label>
+                                <p className="text-gray-900">{displayName}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-500">
-                                    Email
-                                </label>
-                                <p className="text-gray-900">{user.email}</p>
+                                <label className="block text-sm font-medium text-gray-500">Email</label>
+                                <p className="text-gray-900">{email}</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -422,31 +418,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                         <CardContent>
                             <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                 <p className="text-sm text-yellow-800">
-                                    ⚠️ <strong>Instagram Connect</strong> saat ini{" "}
-                                    <strong>belum berfungsi</strong>. Fitur ini sedang dalam tahap
-                                    pengembangan dan belum dapat digunakan untuk posting otomatis.
+                                    ⚠️ <strong>Instagram Connect</strong> saat ini <strong>belum berfungsi</strong>. Fitur ini sedang dalam tahap pengembangan dan belum dapat digunakan untuk posting otomatis.
                                 </p>
                             </div>
 
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="font-semibold">Instagram</p>
-                                    <p
-                                        className={`text-sm ${user.isInstagramConnected
-                                                ? "text-green-600"
-                                                : "text-gray-500"
-                                            }`}
-                                    >
-                                        {user.isInstagramConnected ? "Connected" : "Not Connected"}
+                                    <p className={`text-sm ${isInstagramConnected ? "text-green-600" : "text-gray-500"}`}>
+                                        {isInstagramConnected ? "Connected" : "Not Connected"}
                                     </p>
                                 </div>
-                                <Button
-                                    variant={user.isInstagramConnected ? "danger" : "primary"}
-                                    onClick={onToggleConnection}
-                                    disabled
-                                    className="opacity-60 cursor-not-allowed"
-                                >
-                                    {user.isInstagramConnected ? "Disconnect" : "Connect"}
+                                <Button variant={isInstagramConnected ? "danger" : "primary"} onClick={onToggleConnection} disabled className="opacity-60 cursor-not-allowed">
+                                    {isInstagramConnected ? "Disconnect" : "Connect"}
                                 </Button>
                             </div>
                         </CardContent>
@@ -456,4 +440,3 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
     );
 };
-

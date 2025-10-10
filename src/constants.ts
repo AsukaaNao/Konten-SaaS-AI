@@ -46,13 +46,14 @@ export const Icons = {
       React.createElement('path', { d: "M6 18L18 6M6 6l12 12" })
     )
   ),
-  sparkles: (props: React.SVGProps<SVGSVGElement>) =>
-    React.createElement(
-      'svg',
-      { ...commonSvgProps, ...props },
-      React.createElement('path', { d: 'M5 3v4M3 5h4M16 17v4m-2 2h4M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }),
-      React.createElement('path', { d: 'M12 2v2m0 16v2m-7-9H3m18 0h-2m-5-5l-1-1m8 8l-1-1' })
-    ),
+ sparkles: (props: React.SVGProps<SVGSVGElement>) =>
+  React.createElement(
+    'svg',
+    { ...commonSvgProps, ...props, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z' }),
+    React.createElement('path', { d: 'M4 17l.8 2.2L7 20l-2.2.8L4 23l-.8-2.2L1 20l2.2-.8L4 17z' }),
+    React.createElement('path', { d: 'M19 13l.7 1.9L21 16l-1.3.5L19 18l-.7-1.5L17 16l1.3-.5L19 13z' })
+  ),
   clock: (props: React.SVGProps<SVGSVGElement>) =>
     React.createElement(
       'svg',
@@ -156,6 +157,30 @@ export const Icons = {
       React.createElement('path', { d: 'm9 18 6-6-6-6' })
     ),
 };
+
+export const Spinner: React.FC = () =>
+  React.createElement(
+    'svg',
+    {
+      className: 'w-5 h-5 animate-spin text-current',
+      xmlns: 'http://www.w3.org/2000/svg',
+      fill: 'none',
+      viewBox: '0 0 24 24',
+    },
+    React.createElement('circle', {
+      className: 'opacity-25',
+      cx: '12',
+      cy: '12',
+      r: '10',
+      stroke: 'currentColor',
+      strokeWidth: '4',
+    }),
+    React.createElement('path', {
+      className: 'opacity-75',
+      fill: 'currentColor',
+      d: 'M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z',
+    })
+  );
 
 // Generic UI Components (like a mini shadcn/ui)
 
