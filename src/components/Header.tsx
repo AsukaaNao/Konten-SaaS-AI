@@ -41,30 +41,37 @@ export const Header: React.FC<HeaderProps> = ({
                 <Icons.arrowLeft className="h-6 w-6" />
               </button>
             )}
+
+            {/* ✅ Refined RICE AI Brand Section */}
             <a
-              href="#"
+              href="https://riceai.net"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 group"
               onClick={(e) => {
                 e.preventDefault();
                 onNavigate("dashboard");
               }}
-              className="flex items-center gap-4"
             >
               <img
-                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,fit=crop,q=95/AGB2yyJJKXfD527r/rice-ai-consulting-2-AoPWxvnWOju2GwOz.png"
-                alt="RICE AI Consulting"
-                className="h-10 w-auto"
+                alt="RICE AI Logo"
+                src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=200,fit=crop,q=95/AGB2yyJJKXfD527r/rice-ai-consulting-2-AoPWxvnWOju2GwOz.png"
+                className="h-7 w-auto sm:h-8 object-contain transition-transform group-hover:scale-105"
               />
-              <div className="flex flex-col">
-                <h1 className="text-xl font-bold text-gray-800 leading-tight">
-                  RICE AI Consulting
+              <div className="flex flex-col leading-tight">
+                <h1 className="text-[18px] sm:text-[20px] font-extrabold text-gray-900 tracking-tight leading-[1.1]">
+                  RICE AI
                 </h1>
-                <p className="text-xs text-gray-500 leading-tight">
-                  AI-Powered Solutions for Businesses
+
+                <p className="text-[13px] sm:text-sm text-[#6B9CB2] font-medium tracking-wide">
+                  Content Maker
                 </p>
               </div>
             </a>
+
           </div>
 
+          {/* ✅ User Menu / Login Button */}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger>

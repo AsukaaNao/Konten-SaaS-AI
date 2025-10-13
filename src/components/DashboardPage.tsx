@@ -299,6 +299,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         )}
         
         {/* --- Galeri Inspirasi --- */}
+        {isGuest && (
         <div className="max-w-7xl mx-auto mt-16">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-800">Galeri Hasil</h3>
@@ -343,6 +344,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             ))}
           </div>
         </div>
+        )}
 
       </main>
 

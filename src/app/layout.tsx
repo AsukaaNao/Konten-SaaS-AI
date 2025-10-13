@@ -27,16 +27,16 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "RICE AI Consulting",
-    description: "AI-Powered Solutions for Businesses — by RICE AI Consulting.",
+    title: "RICE AI Consultant",
+    description: "AI-Powered Solutions for Businesses — by RICE AI Consultant.",
     images: [
       "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1200,h=630,fit=crop,q=95/AGB2yyJJKXfD527r/rice-ai-consulting-2-AoPWxvnWOju2GwOz.png",
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "RICE AI Consulting",
-    description: "AI-Powered Solutions for Businesses — by RICE AI Consulting.",
+    title: "RICE AI Consultant",
+    description: "AI-Powered Solutions for Businesses — by RICE AI Consultant.",
     images: [
       "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,h=315,fit=crop,q=95/AGB2yyJJKXfD527r/rice-ai-consulting-2-AoPWxvnWOju2GwOz.png",
     ],
